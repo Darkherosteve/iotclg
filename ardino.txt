@@ -1,0 +1,19 @@
+int ldrPin = 2;  // LDR DO pin
+
+void setup() {
+  pinMode(ldrPin, INPUT);
+  Serial.begin(9600);
+  Serial.println("Nano ready");
+}
+
+void loop() {
+  int state = digitalRead(ldrPin);
+
+  if (state == HIGH) {
+    Serial.println("OFFLINE");
+  } else {
+    Serial.println("ONLINE");
+  }
+
+  delay(1000);  // check every 1 second
+}

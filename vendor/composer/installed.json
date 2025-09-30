@@ -1,0 +1,52 @@
+{
+    "packages": [
+        {
+            "name": "fawno/php-serial",
+            "version": "2.0.0",
+            "version_normalized": "2.0.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fawno/PHP-Serial.git",
+                "reference": "fcef21d2105e4f254f49720d5b3cd03d1289c7a9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fawno/PHP-Serial/zipball/fcef21d2105e4f254f49720d5b3cd03d1289c7a9",
+                "reference": "fcef21d2105e4f254f49720d5b3cd03d1289c7a9",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4.0"
+            },
+            "suggest": {
+                "ext-dio": "Needed for SerialDio (>=0.2.1)"
+            },
+            "time": "2022-03-06T22:26:23+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Fawno\\PhpSerial\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fawno",
+                    "homepage": "https://github.com/fawno/PHP-Serial/graphs/contributors"
+                }
+            ],
+            "description": "Serial port access convenience class",
+            "support": {
+                "issues": "https://github.com/fawno/PHP-Serial/issues",
+                "source": "https://github.com/fawno/PHP-Serial"
+            },
+            "install-path": "../fawno/php-serial"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}
