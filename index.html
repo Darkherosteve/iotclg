@@ -36,6 +36,11 @@ h1 { color: #00ffea; margin-bottom: 40px; }
 .modal-body { max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
 .input-icon { display: flex; align-items: center; justify-content: center; }
 .input-icon i { margin-right: 10px; }
+.developer-caption {
+  color: #00ffea;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
 </style>
 </head>
 <body>
@@ -58,6 +63,13 @@ h1 { color: #00ffea; margin-bottom: 40px; }
     <input type="text" id="currentStatus" class="form-control" readonly>
   </div>
 
+  <!-- WiFi Status -->
+  <label class="form-label">WiFi Status</label>
+  <div class="input-icon">
+    <i class="bi bi-wifi"></i>
+    <input type="text" id="wifiStatus" class="form-control" value="Offline" readonly>
+  </div>
+
   <!-- Last Updated -->
   <label class="form-label">Last Updated</label>
   <div class="input-icon">
@@ -69,6 +81,11 @@ h1 { color: #00ffea; margin-bottom: 40px; }
   <button type="button" class="btn btn-log" data-bs-toggle="modal" data-bs-target="#logModal">
     <i class="bi bi-file-text"></i> View Log
   </button>
+
+  <!-- Developer Caption -->
+  <div class="developer-caption">
+    Developed By Steve || Pankaj || Murthfa
+  </div>
 
 </div>
 
@@ -93,48 +110,56 @@ h1 { color: #00ffea; margin-bottom: 40px; }
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-let lastStatus = '';
+let lastStatus = null; // prevents notification on first load
 
 // Request notification permission
 if (Notification.permission !== "granted") {
   Notification.requestPermission();
 }
 
+// Utility function to capitalize
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Fetch Arduino status
 async function fetchStatus() {
   try {
     const response = await fetch('read_serial.php');
     const data = await response.json();
 
     const currentStatus = document.getElementById('currentStatus');
-    const newStatus = data.status || 'Offline';
+    const wifiStatus = document.getElementById('wifiStatus');
+    const newStatus = (data.status || 'Offline').toLowerCase();
 
-    if (newStatus.toLowerCase() === 'online') {
+    // Update Current and WiFi Status colors and values
+    if (newStatus === 'online') {
       currentStatus.className = 'form-control status-online';
+      wifiStatus.className = 'form-control status-online';
     } else {
       currentStatus.className = 'form-control status-offline';
+      wifiStatus.className = 'form-control status-offline';
     }
-    currentStatus.value = newStatus;
+    currentStatus.value = capitalize(newStatus);
+    wifiStatus.value = capitalize(newStatus);
 
+    // Update timestamp
     document.getElementById('timestamp').value = data.timestamp || '--';
 
-    // Notification + sound on status change
-    if (lastStatus && lastStatus !== newStatus) {
-      if (newStatus.toLowerCase() === 'offline') {
-        // Play sound
+    // Notification only if status changes and lastStatus is not null
+    if (lastStatus !== null && lastStatus !== newStatus) {
+      if (newStatus === 'offline') {
         document.getElementById('alertSound').play();
-
-        // Show desktop notification
         if (Notification.permission === "granted") {
           new Notification("⚠️ Power Cut Detected", {
-            body: `Status changed: ${lastStatus} → ${newStatus}`,
-            icon: "https://cdn-icons-png.flaticon.com/512/285/285812.png" // example icon
+            body: `Status changed: ${capitalize(lastStatus)} → Offline`,
+            icon: "https://cdn-icons-png.flaticon.com/512/285/285812.png"
           });
         }
-      } else {
-        // Optional: notify when back online
+      } else if (newStatus === 'online') {
         if (Notification.permission === "granted") {
           new Notification("✅ Power Restored", {
-            body: `Status changed: ${lastStatus} → ${newStatus}`,
+            body: `Status changed: ${capitalize(lastStatus)} → Online`,
             icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
           });
         }
@@ -148,18 +173,33 @@ async function fetchStatus() {
   }
 }
 
+// Fetch Arduino log
 async function fetchLog() {
   try {
     const response = await fetch('arduino_log.txt');
     const logText = await response.text();
-    document.getElementById('logOutput').textContent = logText;
+    const logOutput = document.getElementById('logOutput');
+
+    const lines = logText.trim().split('\n');
+    if (lines.length === 0 || (lines.length === 1 && lines[0] === "")) {
+      logOutput.innerHTML = "<p>No logs available.</p>";
+      return;
+    }
+
+    let html = "<ul style='list-style:none; padding-left:0; text-align:left;'>";
+    lines.forEach(line => {
+      html += `<li style="border-bottom:1px solid #00ffea; padding:5px 0;">${line}</li>`;
+    });
+    html += "</ul>";
+    logOutput.innerHTML = html;
+
   } catch (error) {
     document.getElementById('logOutput').textContent = "Unable to load log.";
     console.error('Error fetching log:', error);
   }
 }
 
-// Auto-update
+// Auto-update status every 1 second
 fetchStatus();
 setInterval(fetchStatus, 1000);
 
